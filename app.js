@@ -129,6 +129,28 @@ const httpRequestListener = function (request, response) {
         response.end(JSON.stringify({ posts: posts }));
       });
     }
+  } else if (method === "DELETE") {
+    if (url === "/posts_delete") {
+      let body = "";
+
+      request.on("data", (data) => {
+        body += data;
+      });
+      request.on("end", () => {
+        const dataForDelete = JSON.parse(body);
+
+        for (let i in posts) {
+          if (
+            posts[i].id === Number(dataForDelete.id) &&
+            posts[i].userId === Number(dataForDelete.userid)
+          ) {
+            posts.splice(i, 1);
+          }
+        }
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ posts: posts }));
+      });
+    }
   }
 };
 
