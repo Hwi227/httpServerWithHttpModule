@@ -107,6 +107,28 @@ const httpRequestListener = function (request, response) {
         response.end(JSON.stringify({ message: "postCreated" }));
       });
     }
+  } else if (method === "PATCH") {
+    if (url === "/posts_modify") {
+      let body = "";
+
+      request.on("data", (data) => {
+        body += data;
+      });
+      request.on("end", () => {
+        const dataForModify = JSON.parse(body);
+
+        for (let i in posts) {
+          if (
+            posts[i].id === Number(dataForModify.id) &&
+            posts[i].userId === Number(dataForModify.userid)
+          ) {
+            posts[i].content = dataForModify.content;
+          }
+        }
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ posts: posts }));
+      });
+    }
   }
 };
 
