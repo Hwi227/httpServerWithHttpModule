@@ -24,7 +24,7 @@ const posts = [
     id: 2,
     title: "HTTP의 특성",
     content: "Request/Response와 Stateless!!",
-    userId: 1,
+    userId: 2,
   },
 ];
 
@@ -39,6 +39,33 @@ const httpRequestListener = function (request, response) {
     if (url === "/ping") {
       response.writeHead(200, { "Content-Type": "application/json" });
       response.end(JSON.stringify({ message: "pong" }));
+    } else if (method === "GET") {
+      if (url === "/posts_list") {
+        const data = [];
+
+        //1. users 객체의 각 인덱스 값 가져오기
+        //2. posts 객체의 각 인덱스 값 가져오기
+        //3. user.id와 post.userId가 같은지 조건문
+        //4. 3번조건문(true)일때에 data 배열에 push
+        //  -> 객체구조 생성후 data배열에 push해야함.
+        for (let n in users) {
+          for (let m in posts) {
+            if (users[n].id === posts[m].userId) {
+              const obj = {};
+              obj.userID = users[n].id;
+              obj.userName = users[n].name;
+              obj.postingId = posts[m].id;
+              obj.postingTitle = posts[m].title;
+              obj.postingContent = posts[m].content;
+
+              data.push(obj);
+            }
+          }
+        }
+
+        response.writeHead(200, { "Content-Type": "application/json" });
+        response.end(JSON.stringify({ data: data }));
+      }
     }
   } else if (method === "POST") {
     if (url === "/users/signup") {
