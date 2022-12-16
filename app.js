@@ -30,6 +30,7 @@ const posts = [
 
 // 아래에 코드를 작성해 주세요.
 const http = require("http");
+const { isBooleanObject } = require("util/types");
 const server = http.createServer();
 
 const httpRequestListener = function (request, response) {
@@ -39,7 +40,8 @@ const httpRequestListener = function (request, response) {
     if (url === "/ping") {
       response.writeHead(200, { "Content-Type": "application/json" });
       response.end(JSON.stringify({ message: "pong" }));
-    } else if (method === "GET") {
+    }
+    if (method === "GET") {
       if (url === "/posts_list") {
         const data = [];
 
@@ -65,6 +67,43 @@ const httpRequestListener = function (request, response) {
 
         response.writeHead(200, { "Content-Type": "application/json" });
         response.end(JSON.stringify({ data: data }));
+      }
+    }
+    if (method === "GET") {
+      if (url === "/user_posts") {
+        const data = {};
+        let body = "";
+
+        request.on("data", (data) => {
+          body += data;
+        });
+        request.on("end", () => {
+          const dataForUserPost = JSON.parse(body);
+
+          for (let n in users) {
+            if (users[n].id === Number(dataForUserPost.id)) {
+              const postingsArr = [];
+
+              for (let m in posts) {
+                if (posts[m].userId === Number(dataForUserPost.id)) {
+                  const postingObj = {};
+
+                  postingObj.postingId = posts[m].id;
+                  postingObj.postingName = posts[m].title;
+                  postingObj.postingContent = posts[m].content;
+
+                  postingsArr.push(postingObj);
+                }
+              }
+              data.userID = users[n].id;
+              data.userName = users[n].name;
+              data.postings = postingsArr;
+            }
+          }
+
+          response.writeHead(200, { "Content-Type": "application/json" });
+          response.end(JSON.stringify({ data: data }));
+        });
       }
     }
   } else if (method === "POST") {
@@ -116,7 +155,6 @@ const httpRequestListener = function (request, response) {
       });
       request.on("end", () => {
         const dataForModify = JSON.parse(body);
-
         for (let i in posts) {
           if (
             posts[i].id === Number(dataForModify.id) &&
@@ -138,6 +176,7 @@ const httpRequestListener = function (request, response) {
       });
       request.on("end", () => {
         const dataForDelete = JSON.parse(body);
+        //console.log("dataForModify, ", dataForModify);
 
         for (let i in posts) {
           if (
